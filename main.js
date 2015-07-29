@@ -19,6 +19,7 @@ Article: https://software.intel.com/en-us/html5/articles/iot-local-temperature-n
 
 var B = 3975;
 var mraa = require("mraa");
+var net = require('net');
 
 //GROVE Kit A0 Connector --> Aio(0)
 var myAnalogPin = new mraa.Aio(0);
@@ -48,27 +49,42 @@ function startSensorWatch(socket) {
 console.log("Sample Reading Grove Kit Temperature Sensor");
 
 //Create Socket.io server
-var http = require('http');
-var app = http.createServer(function (req, res) {
-    'use strict';
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('<h1>Hello world from Intel IoT platform!</h1>');
-}).listen(1337);
-var io = require('socket.io')(app);
+// var http = require('http');
+// var app = http.createServer(function (req, res) {
+//     'use strict';
+//     res.writeHead(200, {'Content-Type': 'text/plain'});
+//     res.end('<h1>Hello world from Intel IoT platform!</h1>');
+// }).listen(1337);
+// var io = require('socket.io')(app);
+
+
+
+var server = net.createServer(function(socket) {
+    socket.write('Echo server\r\n');
+    socket.pipe(socket);
+});
+
+server.listen(1337); //, '127.0.0.1');
+
+server.on('connection', function(socket) {
+    console.log('Client Connected');
+})
+
+
 
 //Attach a 'connection' event handler to the server
-io.on('connection', function (socket) {
-    'use strict';
-    console.log('a user connected');
-    //Emits an event along with a message
-    socket.emit('connected', 'Welcome');
+// io.on('connection', function (socket) {
+//     'use strict';
+//     console.log('a user connected');
+//     //Emits an event along with a message
+//     socket.emit('connected', 'Welcome');
 
-    //Start watching Sensors connected to Galileo board
-    startSensorWatch(socket);
+//     //Start watching Sensors connected to Galileo board
+//     startSensorWatch(socket);
 
-    //Attach a 'disconnect' event handler to the socket
-    socket.on('disconnect', function () {
-        console.log('user disconnected');
-    });
-});
+//     //Attach a 'disconnect' event handler to the socket
+//     socket.on('disconnect', function () {
+//         console.log('user disconnected');
+//     });
+// });
 
