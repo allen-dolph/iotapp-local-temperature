@@ -17,9 +17,11 @@ Using a ssh client:
 Article: https://software.intel.com/en-us/html5/articles/iot-local-temperature-nodejs-and-html5-samples
 */
 
-var B = 3975;
-var mraa = require("mraa");
-
+var B = 3975
+    , mraa = require("mraa")
+    , groveSensor = require('jsupm_grove')
+    , lcd = require('jsupm_i2clcd');
+    
 // Load Grove module
 //var groveSensor = require('jsupm_grove');
 
