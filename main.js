@@ -19,10 +19,18 @@ Article: https://software.intel.com/en-us/html5/articles/iot-local-temperature-n
 
 var B = 3975;
 var mraa = require("mraa");
+
+// Load Grove module
+//var groveSensor = require('jsupm_grove');
+
+// Create the temperature sensor object using AIO pin 0
+//var tempSensor = new groveSensor.GroveTemp(0);
+//console.log(tempSensor.name());
+
 var net = require('net');
 
 //GROVE Kit A0 Connector --> Aio(0)
-var myAnalogPin = new mraa.Aio(0);
+var myAnalogPin = new mraa.Aio(2);
 
 /*
 Function: startSensorWatch(socket)
@@ -31,22 +39,31 @@ Description: Read Temperature Sensor and send temperature in degrees of Fahrenhe
 */
 function startSensorWatch(socket) {
     'use strict';
+    console.log("Starting Temp Sensor Watch for socket: " + socket.name);
     setInterval(function () {
+        console.log('Reading Temperature...');
         var a = myAnalogPin.read();
         console.log("Analog Pin (A0) Output: " + a);
-        //console.log("Checking....");
+        console.log("Checking....");
         
         var resistance = (1023 - a) * 10000 / a; //get the resistance of the sensor;
-        //console.log("Resistance: "+resistance);
+        console.log("Resistance: "+resistance);
         var celsius_temperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
-        //console.log("Celsius Temperature "+celsius_temperature); 
+        console.log("Celsius Temperature "+celsius_temperature); 
         var fahrenheit_temperature = (celsius_temperature * (9 / 5)) + 32;
         console.log("Fahrenheit Temperature: " + fahrenheit_temperature);
         socket.emit("message", fahrenheit_temperature);
+
+        var data = {
+            celsius : celsius_temperature,
+            fahrenheit : fahrenheit_temperature
+        };
+
+        socket.write(JSON.stringify(data));
     }, 4000);
 }
 
-console.log("Sample Reading Grove Kit Temperature Sensor");
+console.log("Reading Grove Kit Temperature Sensor");
 
 //Create Socket.io server
 // var http = require('http');
@@ -58,18 +75,26 @@ console.log("Sample Reading Grove Kit Temperature Sensor");
 // var io = require('socket.io')(app);
 
 
+var clients = [];
 
 var server = net.createServer(function(socket) {
-    socket.write('Echo server\r\n');
-    socket.pipe(socket);
-});
 
-server.listen(1337); //, '127.0.0.1');
+    socket.name = socket.remoteAddress + ";" + socket.remortePort;
 
-server.on('connection', function(socket) {
-    console.log('Client Connected');
-})
+    clients.push(socket);
 
+    startSensorWatch(socket);
+
+    console.log(socket.name + " connected");
+    socket.write("Welcome " + socket.name + "\n");
+
+    socket.on('data', function(data) {
+        console.log(data.toString('utf-8'));
+    })
+
+    //.write('Echo server\r\n');
+    //socket.pipe(socket);
+}).listen(1337);
 
 
 //Attach a 'connection' event handler to the server
