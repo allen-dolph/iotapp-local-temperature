@@ -98,6 +98,12 @@ console.log("Reading Grove Kit Temperature Sensor");
 
 var clients = [];
 
+// setup the display
+var lcdDisplay = new lcd.Jhd1313m1(0); //, 0x3E, 0x62);  
+lcdDisplay.setColor(64,255,64);
+lcdDisplay.setCursor(0, 1);
+lcdDisplay.write("Node Thermostat. Initializing...");
+
 startTemperatureDisplay();
 
 var server = net.createServer(function(socket) {
