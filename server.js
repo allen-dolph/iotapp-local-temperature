@@ -21,7 +21,7 @@ var B = 3975
     , mraa = require("mraa")
     , groveSensor = require('jsupm_grove')
     , lcd = require('jsupm_i2clcd');
-    
+
 // Load Grove module
 //var groveSensor = require('jsupm_grove');
 
@@ -42,7 +42,7 @@ Description: Read Temperature Sensor and send temperature in degrees of Fahrenhe
 function startSensorWatch(socket) {
     'use strict';
     console.log("Starting Temp Sensor Watch for socket: " + socket.name);
-    setInterval(function () {
+    var sender = setInterval(function () {
         console.log('Reading Temperature...');
         var a = myAnalogPin.read();
         console.log("Analog Pin (A0) Output: " + a);
@@ -61,6 +61,7 @@ function startSensorWatch(socket) {
             fahrenheit : fahrenheit_temperature
         };
 
+        console.log(socket.readyState);
         socket.write(JSON.stringify(data));
     }, 4000);
 }
