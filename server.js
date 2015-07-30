@@ -91,6 +91,9 @@ function startTemperatureDisplay() {
         console.log("Current Temp: " + data.fahrenheit);
 
         // now update the display
+        lcdDisplay.clear();
+        lcdDisplay.home();
+        lcdDisplay.write("C: " + data.celsius + "  F: " + data.fahrenheit);
     }, 1000);
 }
 
@@ -102,7 +105,9 @@ var clients = [];
 var lcdDisplay = new lcd.Jhd1313m1(0); //, 0x3E, 0x62);  
 lcdDisplay.setColor(64,255,64);
 lcdDisplay.home();
-lcdDisplay.write("Node Thermostat\nInitializing...");
+lcdDisplay.write("Node Thermostat")
+lcdDisplay.setCursor(1,0);
+lcdDisplay.write("Initializing...");
 
 startTemperatureDisplay();
 
