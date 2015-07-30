@@ -31,34 +31,44 @@ console.log(tempSensor.name());
 var myAnalogPin = new mraa.Aio(2);
 
 /*
-Function: startSensorWatch(socket)
-Parameters: socket - client communication channel
-Description: Read Temperature Sensor and send temperature in degrees of Fahrenheit every 4 seconds
+ * Function: readTemp
+ * Description: Read the temperature from the grove sensor and returns it
+ * Returns: and object containing both the celsius and farienheight temps
+ */
+function readTemp() {
+    console.log('Reading Temperature...');
+    var a = myAnalogPin.read();
+    console.log("Analog Pin (A0) Output: " + a);
+    console.log("Checking....");
+
+    var resistance = (1023 - a) * 10000 / a; //get the resistance of the sensor;
+    console.log("Resistance: "+resistance);
+    
+    //var celsiusTemperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
+    var cTemp = tempSensor.value();
+    console.log("Celsius Temperature " + cTemp); 
+    
+    var fTemp = (cTemp * (9 / 5)) + 32;
+    console.log("Fahrenheit Temperature: " + fTemp);
+
+    var tempData = {
+        celsius : cTemp,
+        fahrenheit : fTemp
+    };
+
+    return tempData; 
+}
+
+/*
+ * Function: startSensorWatch(socket)
+ * Parameters: socket - client communication channel
+ * Description: Read Temperature Sensor and send temperature in degrees of Fahrenheit every 4 seconds
 */
 function startSensorWatch(socket) {
     'use strict';
     console.log("Starting Temp Sensor Watch for socket: " + socket.name);
     var sender = setInterval(function () {
-        console.log('Reading Temperature...');
-        var a = myAnalogPin.read();
-        console.log("Analog Pin (A0) Output: " + a);
-        console.log("Checking....");
-        
-        var resistance = (1023 - a) * 10000 / a; //get the resistance of the sensor;
-        console.log("Resistance: "+resistance);
-        
-	//var celsiusTemperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
-        var cTemp = tempSensor.value();
-	console.log("Celsius Temperature " + cTemp); 
-        
-	var fTemp = (cTemp * (9 / 5)) + 32;
-	console.log("Fahrenheit Temperature: " + fTemp);
-
-        var data = {
-            celsius : cTemp,
-            fahrenheit : fTemp
-        };
-
+        var data = readTemp();
         console.log(socket.readyState);
         
         if(socket.readyState == "open") {
@@ -69,19 +79,26 @@ function startSensorWatch(socket) {
     }, 4000);
 }
 
+/*
+ * Function: startTemperatureDisplay
+ * Description: continually updates the lcd with the temperature
+ */
+function startTemperatureDisplay() {
+    'use strict';
+    console.log("Starting Temp Sensor LCD display updates");
+    var updater = setInterval(function() {
+        var data = readTemp();
+        console.log("Current Temp: " + data.fahrenheit);
+
+        // now update the display
+    }, 1000);
+}
+
 console.log("Reading Grove Kit Temperature Sensor");
 
-//Create Socket.io server
-// var http = require('http');
-// var app = http.createServer(function (req, res) {
-//     'use strict';
-//     res.writeHead(200, {'Content-Type': 'text/plain'});
-//     res.end('<h1>Hello world from Intel IoT platform!</h1>');
-// }).listen(1337);
-// var io = require('socket.io')(app);
-
-
 var clients = [];
+
+startTemperatureDisplay();
 
 var server = net.createServer(function(socket) {
 
@@ -106,21 +123,4 @@ var server = net.createServer(function(socket) {
     });
 
 }).listen(1337);
-
-
-//Attach a 'connection' event handler to the server
-// io.on('connection', function (socket) {
-//     'use strict';
-//     console.log('a user connected');
-//     //Emits an event along with a message
-//     socket.emit('connected', 'Welcome');
-
-//     //Start watching Sensors connected to Galileo board
-//     startSensorWatch(socket);
-
-//     //Attach a 'disconnect' event handler to the socket
-//     socket.on('disconnect', function () {
-//         console.log('user disconnected');
-//     });
-// });
 
