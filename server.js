@@ -20,16 +20,12 @@ Article: https://software.intel.com/en-us/html5/articles/iot-local-temperature-n
 var B = 3975
     , mraa = require("mraa")
     , groveSensor = require('jsupm_grove')
-    , lcd = require('jsupm_i2clcd');
-
-// Load Grove module
-//var groveSensor = require('jsupm_grove');
+    , lcd = require('jsupm_i2clcd')
+    , net = require('net');
 
 // Create the temperature sensor object using AIO pin 0
-//var tempSensor = new groveSensor.GroveTemp(0);
-//console.log(tempSensor.name());
-
-var net = require('net');
+var tempSensor = new groveSensor.GroveTemp(2);
+console.log(tempSensor.name());
 
 //GROVE Kit A0 Connector --> Aio(0)
 var myAnalogPin = new mraa.Aio(2);
@@ -50,15 +46,17 @@ function startSensorWatch(socket) {
         
         var resistance = (1023 - a) * 10000 / a; //get the resistance of the sensor;
         console.log("Resistance: "+resistance);
-        var celsius_temperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
-        console.log("Celsius Temperature "+celsius_temperature); 
-        var fahrenheit_temperature = (celsius_temperature * (9 / 5)) + 32;
-        console.log("Fahrenheit Temperature: " + fahrenheit_temperature);
-        socket.emit("message", fahrenheit_temperature);
+        
+	//var celsiusTemperature = 1 / (Math.log(resistance / 10000) / B + 1 / 298.15) - 273.15;//convert to temperature via datasheet ;
+        var cTemp = tempSensor.value();
+	console.log("Celsius Temperature " + cTemp); 
+        
+	var fTemp = (cTemp * (9 / 5)) + 32;
+	console.log("Fahrenheit Temperature: " + fTemp);
 
         var data = {
-            celsius : celsius_temperature,
-            fahrenheit : fahrenheit_temperature
+            celsius : cTemp,
+            fahrenheit : fTemp
         };
 
         console.log(socket.readyState);
