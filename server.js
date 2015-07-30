@@ -30,6 +30,17 @@ console.log(tempSensor.name());
 //GROVE Kit A0 Connector --> Aio(0)
 var myAnalogPin = new mraa.Aio(2);
 
+/* 
+ * Function: extHandler
+ * Description: cleans up when the server is closed
+ */
+function exitHandler(options, err) {
+    lcdDisplay.clear();
+    if (options.cleanup) console.log('clean');
+    if (err) console.log(err.stack);
+    if (options.exit) process.exit();
+}
+
 /*
  * Function: readTemp
  * Description: Read the temperature from the grove sensor and returns it
@@ -134,4 +145,14 @@ var server = net.createServer(function(socket) {
     });
 
 }).listen(1337);
+
+// setup our exit handlers
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
