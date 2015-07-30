@@ -90,10 +90,15 @@ var server = net.createServer(function(socket) {
 
     socket.on('data', function(data) {
         console.log(data.toString('utf-8'));
-    })
+    });
 
-    //.write('Echo server\r\n');
-    //socket.pipe(socket);
+    socket.on('disconnect', function() {
+        var idx = clients.indexOf(socket);
+        if(idx != -1) {
+            clients.splice(idx, 1);
+        }
+    });
+
 }).listen(1337);
 
 

@@ -1,14 +1,13 @@
 
-var SERVER_IP = "127.0.0.1";
-
 var net = require('net');
+var argv = require('minimist')(process.argv.slice(2));
 
 var client = new net.Socket();
-
+var SERVER_IP = argv.i || "127.0.0.1";
+var PORT = argv.p || 1337;
 
 client.on('data', function(data) {
 	console.log('Received: ' + data.toString('utf-8'));
-
 });
 
 client.on('close', function() {
@@ -17,5 +16,5 @@ client.on('close', function() {
 
 client.connect(1337, SERVER_IP, function() {
 	console.log('Connected');
-	client.write('Hello, server from client.');
+	client.write('Hello from client.');
 });
