@@ -62,7 +62,12 @@ function startSensorWatch(socket) {
         };
 
         console.log(socket.readyState);
-        socket.write(JSON.stringify(data));
+        
+        if(socket.readyState == "open") {
+            socket.write(JSON.stringify(data));
+        } else {
+            clearInterval(sender);
+        }
     }, 4000);
 }
 
