@@ -88,7 +88,7 @@ module.exports = {
 			    //console.log(response);
 			});
 
-	    }, 15000);
+	    }, 60000);
 	},
 	/*
 	 * Function: startSensorWatch(socket)
