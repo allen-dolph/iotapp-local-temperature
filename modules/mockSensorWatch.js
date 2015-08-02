@@ -61,7 +61,7 @@ module.exports = {
 			  headers:{"Content-Type": "application/json"} 
 			};
 
-	        temperatureApi.client.methods.postTemperature(args, function(data,response){
+	        temperatureApi.client.methods.postLocalTemperature(args, function(data,response){
 			    // parsed response body as js object 
 			    console.log(data.toString('utf-8'));
 			    // raw response 
