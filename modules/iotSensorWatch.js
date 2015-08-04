@@ -45,7 +45,7 @@ var readTemp = function() {
         fahrenheit : fTemp
     };
 
-    return tempertureData; 
+    return temperatureData; 
 }
 
 var updateDisplay = function(temperatureData) {
