@@ -40,12 +40,43 @@ var readTemp = function() {
     var fTemp = (cTemp * (9 / 5)) + 32;
     console.log("Fahrenheit Temperature: " + fTemp);
 
-    var tempData = {
+    var temperatureData = {
         celsius : cTemp,
         fahrenheit : fTemp
     };
 
-    return tempData; 
+    return tempertureData; 
+}
+
+var updateDisplay = function(temperatureData) {
+	// now update the display
+    lcdDisplay.clear();
+    lcdDisplay.home();
+    lcdDisplay.write("C: " + temperatureData.celsius + "  F: " + temperatureData.fahrenheit);
+}
+
+var postData = function(temperatureData) {
+	// also post to the temperature backend
+    var temperatureObj = {
+    	celciusTemperature : temperatureData.celsius,
+    	fahrenheitTemperature: temperatureData.fahrenheit,
+    	deviceSerialNumber: deviceSerialNumber,
+    	unixTimestamp: Math.floor(Date.now() / 1000)
+    };
+
+    // set content-type header and data as json in args parameter 
+	var args = {
+	  data: temperatureObj,
+	  headers:{"Content-Type": "application/json"} 
+	};
+
+	console.log('Posting temp data to cloud enpoints...');
+    temperatureApi.client.methods.postTemperature(args, function(d,response){
+	    // parsed response body as js object 
+	    console.log(d.toString('utf-8'));
+	    // raw response 
+	    //console.log(response);
+	});
 }
 
 module.exports = {
@@ -56,39 +87,21 @@ module.exports = {
 	 */
 	startTemperatureDisplay : function(deviceSerialNumber) {
 	    'use strict';
+	    var data = readTemp();
+        console.log("Current Temp: " + data.fahrenheit);
+
+        updateDisplay(data);
+        postData(data);
+	    
 	    console.log("Starting Temp Sensor LCD display updates");
 	    var updater = setInterval(function() {
 	        var data = readTemp();
 	        console.log("Current Temp: " + data.fahrenheit);
 
-	        // now update the display
-	        lcdDisplay.clear();
-	        lcdDisplay.home();
-	        lcdDisplay.write("C: " + data.celsius + "  F: " + data.fahrenheit);
+	        updateDisplay(data);
+	        postData(data);	        
 
-	        // also post to the temperature backend
-	        var temperatureObj = {
-	        	celciusTemperature : data.celsius,
-	        	fahrenheitTemperature: data.fahrenheit,
-	        	deviceSerialNumber: deviceSerialNumber,
-	        	unixTimestamp: Math.floor(Date.now() / 1000)
-	        };
-
-	        // set content-type header and data as json in args parameter 
-			var args = {
-			  data: temperatureObj,
-			  headers:{"Content-Type": "application/json"} 
-			};
-
-			console.log('Posting temp data to cloud enpoints...');
-	        temperatureApi.client.methods.postTemperature(args, function(data,response){
-			    // parsed response body as js object 
-			    console.log(data.toString('utf-8'));
-			    // raw response 
-			    //console.log(response);
-			});
-
-	    }, 60000);
+	    }, 30000);
 	},
 	/*
 	 * Function: startSensorWatch(socket)
@@ -100,8 +113,7 @@ module.exports = {
 	    console.log("Starting Temp Sensor Watch for socket: " + socket.name);
 	    var sender = setInterval(function () {
 	        var data = readTemp();
-	        console.log(socket.readyState);
-	        
+
 	        if(socket.readyState == "open") {
 	            socket.write(JSON.stringify(data));
 	        } else {
