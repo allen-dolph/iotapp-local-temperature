@@ -55,7 +55,7 @@ var updateDisplay = function(temperatureData) {
     lcdDisplay.write("C: " + temperatureData.celsius + "  F: " + temperatureData.fahrenheit);
 }
 
-var postData = function(temperatureData) {
+var postData = function(temperatureData, deviceSerialNumber) {
 	// also post to the temperature backend
     var temperatureObj = {
     	celciusTemperature : temperatureData.celsius,
@@ -91,8 +91,8 @@ module.exports = {
         console.log("Current Temp: " + data.fahrenheit);
 
         updateDisplay(data);
-        postData(data);
-	    
+        postData(data, deviceSerialNumber);
+
 	    console.log("Starting Temp Sensor LCD display updates");
 	    var updater = setInterval(function() {
 	        var data = readTemp();
